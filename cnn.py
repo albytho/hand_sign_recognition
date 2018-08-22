@@ -1,4 +1,3 @@
-# Part 1 - Building the CNN
 
 # Importing the Keras libraries and packages
 # We use sequential since our nerual network is a sequence of layers
@@ -13,35 +12,46 @@ import os
 import shutil
 from pathlib import Path
 
+# Part 1 - Preparing data
 # Prepare and seperate the data
 home_path = os.getcwd()
-training_path = home_path + "/dataset/training_set"
-test_path = home_path + "/dataset/test_set"
+training_path = home_path + "/asl-alphabet/training_set"
+test_path = home_path + "/asl-alphabet/test_set"
 
-"""
-for root, dirs, files in os.walk(training_path):
-   for name in dirs:
-       
-       new_test_directory = test_path + "/" + name
-       if not os.path.exists(new_test_directory):
-           os.makedirs(new_test_directory)
-          
-       num_test_files = 250
-       curr_num = 1
-       
-       for filename in os.listdir(os.path.join(root, name)):
-           if curr_num > num_test_files:
-               break;
+if os.path.exists(test_path) == False:
+    print("The test_set folder doesn't exist")
+    exit()
+
+if os.path.exists(training_path) == False:
+    print("The training_set folder doesn't exist")
+    exit()
+
+#If the test set folder doesn't have any content, lets move
+#some data from the training into test
+if os.path.exists(test_path+"/A") == False:
+    for root, dirs, files in os.walk(training_path):
+       for name in dirs:
            
-           image_name = name+str(curr_num)+".jpg"
-           shutil.move(training_path + "/" + name + "/" + image_name, new_test_directory)
-           curr_num = curr_num + 1
-"""      
+           new_test_directory = test_path + "/" + name
+           if not os.path.exists(new_test_directory):
+               os.makedirs(new_test_directory)
+              
+           num_test_files = 250
+           curr_num = 1
+           
+           for filename in os.listdir(os.path.join(root, name)):
+               if curr_num > num_test_files:
+                   break;
+               
+               image_name = name+str(curr_num)+".jpg"
+               shutil.move(training_path + "/" + name + "/" + image_name, new_test_directory)
+               curr_num = curr_num + 1
 
+# Part 2 - Building the CNN
 # Initializing the CNN
 classifier = Sequential();
 
-# Part 2 - Fitting the CNN to the images    
+# Fitting the CNN to the images    
 train_datagen = ImageDataGenerator(
         rescale=1./255,
         shear_range=0.2,
@@ -51,13 +61,13 @@ train_datagen = ImageDataGenerator(
 test_datagen = ImageDataGenerator(rescale=1./255)
     
 training_set = train_datagen.flow_from_directory(
-        'dataset/training_set',
+        'asl-alphabet/training_set',
         target_size=(64, 64),
         batch_size=8,
         class_mode='categorical')
     
 test_set = test_datagen.flow_from_directory(
-        'dataset/test_set',
+        'asl-alphabet/test_set',
         target_size=(64, 64),
         batch_size=8,
         class_mode='categorical')
@@ -121,7 +131,7 @@ else:
 #Part 3 - Making new predictions
 import numpy as np
 from keras.preprocessing import image
-test_image = image.load_img('dataset/asl_alphabet_test/Y_test.jpg', target_size = (64,64))
+test_image = image.load_img('asl-alphabet/asl_alphabet_test/Y_test.jpg', target_size = (64,64))
 test_image = image.img_to_array(test_image)
 
 #Our classifier can't just take one image, it has to take a batch
